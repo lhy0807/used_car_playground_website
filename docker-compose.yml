@@ -1,0 +1,16 @@
+version: '2'
+
+volumes: 
+  geojson:
+
+services:
+  ucpweb:
+    build: app
+    ports:
+      - "5100:5100"
+    volumes: 
+      - geojson:/usr/src/app/geojson
+  geojson:
+    build: save_geojson
+    volumes: 
+      - geojson:/usr/src/app/geojson    

@@ -1,8 +1,0 @@
-fiona
-descartes
-gunicorn
-geopandas
-flask
-matplotlib
-pymongo
-flask_wtf
