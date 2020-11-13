@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.8
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
 
@@ -12,12 +12,15 @@ ENV C_INCLUDE_PATH=/usr/include/gdal
 
 WORKDIR /usr/src/app
 
+RUN pip install --upgrade pip
+
 COPY requirements.txt .
-COPY run_gunicorn.sh .
 
 RUN pip install -r requirements.txt
 
 EXPOSE 5100
+
+COPY run_gunicorn.sh .
 RUN chmod +x ./run_gunicorn.sh
 
 COPY . . 

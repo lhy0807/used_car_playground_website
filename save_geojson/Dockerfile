@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.8
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
 
