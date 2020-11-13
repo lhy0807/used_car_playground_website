@@ -1,4 +1,3 @@
 app/atlas_db.py
 save_geojson/atlas_db.py
 __pycache__/
-save_geojson/geojson/
