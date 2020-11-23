@@ -41,7 +41,7 @@ var countSets = [];
 var countEach;
 var color;
 var make;
-for (make in line_data) {
+for (make in line_price) {
   color = getRandomColor();
   countEach = {
     label: make,
@@ -63,7 +63,7 @@ for (make in line_data) {
     pointBorderWidth: 2,
     // data: [500, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 10000],
     // data: line_data[1],
-    data: line_data[make],
+    data: line_price[make],
   };
 
   countSets.push(countEach);
