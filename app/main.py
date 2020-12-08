@@ -66,6 +66,13 @@ def model_table_fn():
   print("get models")
   return list(modelcode.find({"code":{"$in":usedcar.distinct("model")}}))
 
+def make_prop_fn():
+  print("get make prop")
+  make_num = make_num_fn()
+  total_make = len(modelcode.distinct("make"))
+  return make_num/total_make
+  # return total_make
+
 def make_pie_fn():
 #pie chart for each car make
   print("get pie chart data")
@@ -147,6 +154,7 @@ def year_price_fn():
 #init
 model_num = 0
 make_num = 0
+make_prop = 0
 year_span = ""
 model_table = list()
 
@@ -161,6 +169,7 @@ avg_price = ""
 with ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
   model_num_thread = executor.submit(model_num_fn)
   make_num_thread = executor.submit(make_num_fn)
+  make_prop_thread = executor.submit(make_prop_fn)
   year_span_thread = executor.submit(year_span_fn)
   model_table_thread = executor.submit(model_table_fn)
   make_pie_thread = executor.submit(make_pie_fn)
@@ -176,6 +185,7 @@ def index(df = ny):
 
   model_num = model_num_thread.result()
   make_num = make_num_thread.result()
+  make_prop = make_prop_thread.result()
   year_span = year_span_thread.result()
   model_table = model_table_thread.result()
   pie_name = make_pie_thread.result()[0]
@@ -189,6 +199,7 @@ def index(df = ny):
   return render_template('index.html', 
     model_num=model_num, 
     make_num=make_num,
+    make_prop=make_prop,
     year_span=year_span,
     model_table=model_table,
     pie_name=json.dumps(pie_name), pie_porp=json.dumps(pie_porp), pie_name_no_json=pie_name,
