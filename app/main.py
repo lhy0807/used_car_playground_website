@@ -55,6 +55,7 @@ def make_num_fn():
   # in usedcar and model code
   return len(modelcode.find({"code":{"$in":usedcar.distinct("model")} }).distinct("make"))
 
+
 def year_span_fn():
   print("get year span")
   year = modelcode.distinct("year")
@@ -110,6 +111,14 @@ def year_count_fn():
 def parse(str):
   return float(str.replace(",",""))
 
+
+def avg_price_fn():
+  print("get average price")
+  price_list = list(usedcar.find({"model":{"$in":modelcode.distinct("code")}}, {"price":1, "_id":0}))
+  avg = sum([parse(p["price"]) for p in price_list])/len(price_list)
+  return "{:.2f}".format(avg)
+
+
 def year_price_fn():
   print("Start line chart price data")
   make = modelcode.find({"code":{"$in":usedcar.distinct("model")} }).distinct("make")
@@ -146,6 +155,8 @@ pie_porp = list()
 line_year = list()
 line_count = list()
 line_price = list()
+
+avg_price = ""
 #start threads
 with ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
   model_num_thread = executor.submit(model_num_fn)
@@ -157,6 +168,8 @@ with ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
   # test line chat data
   year_count_thread = executor.submit(year_count_fn)
   year_price_thread = executor.submit(year_price_fn)
+
+  avg_price_thread = executor.submit(avg_price_fn)
 
 @app.route("/")
 def index(df = ny):
@@ -171,6 +184,8 @@ def index(df = ny):
   line_count = year_count_thread.result()[1]
   line_price = year_price_thread.result()[1]
 
+  avg_price = avg_price_thread.result()
+
   return render_template('index.html', 
     model_num=model_num, 
     make_num=make_num,
@@ -178,7 +193,8 @@ def index(df = ny):
     model_table=model_table,
     pie_name=json.dumps(pie_name), pie_porp=json.dumps(pie_porp), pie_name_no_json=pie_name,
     line_year=json.dumps(line_year), line_count=json.dumps(line_count),
-    line_price=json.dumps(line_price) )
+    line_price=json.dumps(line_price),
+    avg_price=avg_price )
 
 @csrf.exempt
 @app.route("/model", methods=['POST'])
