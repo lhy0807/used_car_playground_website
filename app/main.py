@@ -48,9 +48,30 @@ def model_num_fn():
   print("get model number")
   return len(usedcar.distinct("model"))
 
+def make_num_fn():
+  print("get make number")
+  # in modelcode
+  # return len(modelcode.distinct("make"))
+  # in usedcar and model code
+  return len(modelcode.find({"code":{"$in":usedcar.distinct("model")} }).distinct("make"))
+
+
+def year_span_fn():
+  print("get year span")
+  year = modelcode.distinct("year")
+  span = min(year) + " - " + max(year)
+  return span
+
 def model_table_fn():
   print("get models")
   return list(modelcode.find({"code":{"$in":usedcar.distinct("model")}}))
+
+def make_prop_fn():
+  print("get make prop")
+  make_num = make_num_fn()
+  total_make = len(modelcode.distinct("make"))
+  return make_num/total_make
+  # return total_make
 
 def make_pie_fn():
 #pie chart for each car make
@@ -62,15 +83,18 @@ def make_pie_fn():
   #porpotion
   porp = []
   for i in num:
+    ## this is just porportion
     porp.append(float(np.round((i/sum(num)*100), 2)))
+    ## however, using pie chart we can use its number so hovering shows the amount 
+    # porp.append(i)
   return [make, porp]
 
 # for line chart, create _attr_ vs year
 # options: 
 #   avgerage price vs year for specific model/makes
 
-def make_line_fn():
-  print("start line chart data")
+def year_count_fn():
+  print("start line chart count data")
   make = modelcode.find({"code":{"$in":usedcar.distinct("model")} }).distinct("make")
   year = modelcode.distinct("year")
 
@@ -89,36 +113,99 @@ def make_line_fn():
   print("get line chart data")
   return [year, count_dict]
 
+# assert that input string can be parsed to numeric (int/float)
+# example: "27,995" -> "27995"
+def parse(str):
+  return float(str.replace(",",""))
+
+
+def avg_price_fn():
+  print("get average price")
+  price_list = list(usedcar.find({"model":{"$in":modelcode.distinct("code")}}, {"price":1, "_id":0}))
+  avg = sum([parse(p["price"]) for p in price_list])/len(price_list)
+  return "{:.2f}".format(avg)
+
+
+def year_price_fn():
+  print("Start line chart price data")
+  make = modelcode.find({"code":{"$in":usedcar.distinct("model")} }).distinct("make")
+  year = modelcode.distinct("year")
+
+  price_dict = dict()
+
+  for m in make:
+    price_each = []
+    for y in year:
+      # total = usedcar.find({"model":{"$in":modelcode.find({"make":m}).distinct("code")}, "year":y}).count()
+      price_list = list(usedcar.find({"model":{"$in":modelcode.find({"make":m}).distinct("code")}, "year":y}, { "price":1, "_id":0 }))
+      if (len(price_list) == 0):
+        avg = 0
+      else:
+        avg = sum( [ parse(p["price"]) for p in price_list ] )/len(price_list)
+      price_each.append(avg)
+
+    # total_num.append(num_each)
+    price_dict[m] = price_each
+
+  # print(total_in_year)
+  print("get line chart price data")
+  return [year, price_dict]
 
 #init
 model_num = 0
+make_num = 0
+make_prop = 0
+year_span = ""
 model_table = list()
+
 pie_name = list()
 pie_porp = list()
 line_year = list()
-line_data = list()
+line_count = list()
+line_price = list()
+
+avg_price = ""
 #start threads
 with ThreadPoolExecutor(multiprocessing.cpu_count()) as executor:
   model_num_thread = executor.submit(model_num_fn)
+  make_num_thread = executor.submit(make_num_fn)
+  make_prop_thread = executor.submit(make_prop_fn)
+  year_span_thread = executor.submit(year_span_fn)
   model_table_thread = executor.submit(model_table_fn)
   make_pie_thread = executor.submit(make_pie_fn)
 
   # test line chat data
-  make_line_thread = executor.submit(make_line_fn)
+  year_count_thread = executor.submit(year_count_fn)
+  year_price_thread = executor.submit(year_price_fn)
+
+  avg_price_thread = executor.submit(avg_price_fn)
 
 @app.route("/")
 def index(df = ny):
 
   model_num = model_num_thread.result()
+  make_num = make_num_thread.result()
+  make_prop = make_prop_thread.result()
+  year_span = year_span_thread.result()
   model_table = model_table_thread.result()
   pie_name = make_pie_thread.result()[0]
   pie_porp = make_pie_thread.result()[1]
-  line_year = make_line_thread.result()[0]
-  line_data = make_line_thread.result()[1]
+  line_year = year_count_thread.result()[0]
+  line_count = year_count_thread.result()[1]
+  line_price = year_price_thread.result()[1]
 
-  return render_template('index.html', model_num=model_num, model_table=model_table,
-   pie_name=json.dumps(pie_name), pie_porp=json.dumps(pie_porp), pie_name_no_json=pie_name,
-   line_year=json.dumps(line_year), line_data=json.dumps(line_data), line_year_no_json=line_year )
+  avg_price = avg_price_thread.result()
+
+  return render_template('index.html', 
+    model_num=model_num, 
+    make_num=make_num,
+    make_prop=make_prop,
+    year_span=year_span,
+    model_table=model_table,
+    pie_name=json.dumps(pie_name), pie_porp=json.dumps(pie_porp), pie_name_no_json=pie_name,
+    line_year=json.dumps(line_year), line_count=json.dumps(line_count),
+    line_price=json.dumps(line_price),
+    avg_price=avg_price )
 
 @csrf.exempt
 @app.route("/model", methods=['POST'])

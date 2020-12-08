@@ -13,7 +13,11 @@
         const pie_name = JSON.parse('{{ pie_name|safe }}');
         const pie_porp = JSON.parse('{{ pie_porp|safe }}');
         const line_year = JSON.parse('{{ line_year|safe }}');
-        const line_data = JSON.parse('{{ line_data|safe }}');
+        const line_count = JSON.parse('{{ line_count|safe }}');
+        const line_price = JSON.parse('{{ line_price|safe }}');
+
+        const make_prop = JSON.parse('{{ make_prop|safe }}');
+
 
         function setPieLabelColor() {
             var i;
@@ -30,6 +34,13 @@
                     $("#map").attr("src", "data:image/png;base64," + result);
                 }
             })
+        }
+
+        function AAA() {
+        	var percent = (make_prop*100).toString()+"%";
+        	document.getElementById("aaa").style.width = percent;
+        	// document.getElementById("aaa").style.color = "#5a5c69";
+        	document.getElementById("aaa").innerHTML = "Success!";
         }
     </script>
 
@@ -185,8 +196,8 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings (Annual)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Average Price</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$ {{ avg_price }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -202,14 +213,14 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks</div>
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Makes</div>
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ make_num }}</div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        <div id="aaa" class="progress-bar bg-info" role="progressbar" style="width: 100%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" onclick="AAA()" color="">click to show the proportion </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -228,8 +239,8 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Requests</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Year Span</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ year_span }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -341,7 +352,7 @@
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Average Price Overview</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -517,7 +528,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>Copyright &copy; Used Car Playground 2020</span>
                     </div>
                 </div>
             </footer>
